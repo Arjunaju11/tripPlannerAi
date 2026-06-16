@@ -1,0 +1,163 @@
+@import "./styles/tokens.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 210 40% 98%;
+  --foreground: 222 47% 11%;
+  --border: 214 32% 88%;
+  --primary: 187 86% 34%;
+  --muted: 204 45% 94%;
+  --surface: 0 0% 100%;
+}
+
+.dark {
+  --background: 222 47% 11%;
+  --foreground: 210 40% 98%;
+  --border: 217 33% 22%;
+  --primary: 187 86% 45%;
+  --muted: 217 33% 18%;
+  --surface: 222 47% 13%;
+}
+
+body {
+  margin: 0;
+  background:
+    linear-gradient(rgba(8, 145, 178, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(8, 145, 178, 0.04) 1px, transparent 1px),
+    radial-gradient(circle at top left, hsl(var(--primary) / 0.12), transparent 32rem),
+    linear-gradient(180deg, hsl(var(--background)), hsl(var(--muted) / 0.55));
+  background-size: 32px 32px, 32px 32px, auto, auto;
+  color: hsl(var(--foreground));
+  font-family: var(--font-body);
+  font-feature-settings: "kern" 1, "liga" 1;
+  line-height: 1.6;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  letter-spacing: -0.025em;
+}
+
+::selection {
+  background: hsl(var(--primary) / 0.18);
+}
+
+.page-enter {
+  animation: page-enter 360ms ease both;
+}
+
+.reveal-card {
+  animation: reveal-card 420ms ease both;
+}
+
+.stagger > * {
+  animation: reveal-card 520ms var(--ease-smooth) both;
+}
+
+.stagger > *:nth-child(2) {
+  animation-delay: 60ms;
+}
+
+.stagger > *:nth-child(3) {
+  animation-delay: 120ms;
+}
+
+.stagger > *:nth-child(4) {
+  animation-delay: 180ms;
+}
+
+.hero-photo-mask {
+  mask-image: linear-gradient(to bottom, black 62%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 62%, transparent 100%);
+}
+
+.nav-active {
+  position: relative;
+}
+
+.nav-active::after {
+  position: absolute;
+  inset-inline: 0.65rem;
+  bottom: -0.2rem;
+  height: 2px;
+  content: "";
+  border-radius: 999px;
+  background: hsl(var(--primary));
+  animation: nav-pill 250ms var(--ease-smooth) both;
+}
+
+.skeleton-shimmer {
+  overflow: hidden;
+  position: relative;
+}
+
+.skeleton-shimmer::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.35), transparent);
+  animation: shimmer 1.4s infinite;
+}
+
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes reveal-card {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes nav-pill {
+  from {
+    opacity: 0;
+    transform: scaleX(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 1ms !important;
+    transition-duration: 1ms !important;
+  }
+}
