@@ -30,6 +30,7 @@ const EnvSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   PORT: z.coerce.number().default(5000),
   MONGO_URI: z.string().min(1),
+  USE_MEMORY_MONGO: z.enum(["true", "false"]).default("false"),
   JWT_SECRET: z.string().min(32),
   JWT_REFRESH_SECRET: z.string().min(32),
   OPENAI_API_KEY: z.string().optional(),
@@ -48,7 +49,7 @@ const EnvSchema = z.object({
   AWS_SECRET_ACCESS_KEY: z.string().optional(),
   AWS_BUCKET_NAME: z.string().optional(),
   AWS_REGION: z.string().default("us-east-1"),
-  CLIENT_URL: z.string().url().default("http://localhost:5173"),
+  CLIENT_URL: z.string().min(1).default("http://localhost:5173"),
   STORAGE_DRIVER: z.enum(["local", "s3"]).default("local")
 });
 

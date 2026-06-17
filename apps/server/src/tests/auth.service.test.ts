@@ -71,6 +71,15 @@ describe("AuthService", () => {
     expect(emailService.sendWelcomeEmail).toHaveBeenCalledWith("test@example.com", "Test User");
   });
 
+  it("rejects duplicate registration", async () => {
+    users.set("test@example.com", { _id: "1", name: "Test User", email: "test@example.com", authProvider: "local" });
+    const service = new AuthService(repo, new TokenService());
+
+    await expect(service.register({ name: "Test User", email: "test@example.com", password: "password123" })).rejects.toThrow(
+      "Email is already registered"
+    );
+  });
+
   it("does not fail registration when the welcome email fails", async () => {
     const emailService = {
       isConfigured: () => true,
@@ -97,6 +106,14 @@ describe("AuthService", () => {
   it("rejects bad credentials", async () => {
     const service = new AuthService(repo, new TokenService());
     await expect(service.login({ email: "missing@example.com", password: "password123" })).rejects.toThrow("Invalid credentials");
+  });
+
+  it("rejects an incorrect password", async () => {
+    const password = await bcrypt.hash("password123", 12);
+    users.set("test@example.com", { _id: "1", name: "Test User", email: "test@example.com", password, authProvider: "local" });
+    const service = new AuthService(repo, new TokenService());
+
+    await expect(service.login({ email: "test@example.com", password: "wrongpassword" })).rejects.toThrow("Invalid credentials");
   });
 
   it("returns the current user by id", async () => {
@@ -127,6 +144,22 @@ describe("AuthService", () => {
     expect(user.passwordResetToken).toBeTruthy();
     expect(user.passwordResetToken).not.toBe(rawToken);
     expect(user.passwordResetExpires).toBeInstanceOf(Date);
+  });
+
+  it("clears a reset token when reset email delivery fails", async () => {
+    const password = await bcrypt.hash("password123", 12);
+    users.set("test@example.com", { _id: "1", name: "Test User", email: "test@example.com", password, authProvider: "local" });
+    const service = new AuthService(repo, new TokenService(), {
+      isConfigured: () => true,
+      sendWelcomeEmail: vi.fn(),
+      sendPasswordResetEmail: vi.fn().mockRejectedValue(new Error("SMTP failed"))
+    } as any);
+
+    await expect(service.forgotPassword({ email: "test@example.com" })).rejects.toThrow("Password reset email is unavailable");
+
+    const user = users.get("test@example.com");
+    expect(user.passwordResetToken).toBeUndefined();
+    expect(user.passwordResetExpires).toBeUndefined();
   });
 
   it("uses a generic no-op for unknown and google-only forgot-password requests", async () => {
@@ -164,5 +197,11 @@ describe("AuthService", () => {
     await expect(bcrypt.compare("newpassword123", user.password)).resolves.toBe(true);
     expect(user.passwordResetToken).toBeUndefined();
     await expect(service.resetPassword({ token: rawToken, password: "anotherpassword123" })).rejects.toThrow("Reset link is invalid or expired");
+  });
+
+  it("rejects invalid refresh tokens", async () => {
+    const service = new AuthService(repo, new TokenService());
+
+    await expect(service.refresh("not-a-valid-token")).rejects.toThrow("Invalid refresh token");
   });
 });
