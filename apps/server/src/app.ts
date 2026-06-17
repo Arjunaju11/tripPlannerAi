@@ -18,6 +18,7 @@ import { itineraryRouter } from "./routes/itinerary.routes.js";
 import { placesRouter } from "./routes/places.routes.js";
 import { userRouter } from "./routes/user.routes.js";
 
+const privateNetworkHeader = "Access-Control-Allow-Private-Network";
 const allowedOrigins = env.CLIENT_URL.split(",")
   .map((origin) => origin.trim())
   .filter(Boolean);
@@ -25,6 +26,12 @@ const allowedOrigins = env.CLIENT_URL.split(",")
 export function createApp() {
   const app = express();
   app.use(helmet());
+  app.use((req, res, next) => {
+    if (req.headers["access-control-request-private-network"] === "true") {
+      res.setHeader(privateNetworkHeader, "true");
+    }
+    next();
+  });
   app.use(
     cors({
       origin(origin, callback) {
